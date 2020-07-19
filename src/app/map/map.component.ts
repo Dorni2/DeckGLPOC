@@ -52,7 +52,7 @@ export class MapComponent implements OnInit {
       scaleSize: 15,
       getIcon: d => 'marker',
       getPosition: d => [d.geometry.x, d.geometry.y],
-      getSize: d => 150,
+      getSize: d => 50,
       getColor: (d) => [Math.sqrt(d.exits), 140, 0],
     })
     this.layer.deck.layers.push(newIconLayer);
@@ -64,13 +64,15 @@ export class MapComponent implements OnInit {
     clonedGraphic.attributes.old = `[${clonedGraphic.geometry.x},${clonedGraphic.geometry.y}]`
     let _distance = 10000
     var radians = clonedGraphic.attributes.ANGLE * (Math.PI / 180); // Convert angle to radians
-    var newX = clonedGraphic.geometry.x /*+ _distance*/ * Math.cos(radians); // calc new X
-    var newY = clonedGraphic.geometry.y /*+ _distance*/ * Math.sin(radians); // calc new Y
+    var newX = clonedGraphic.geometry.x + _distance * Math.cos(radians); // calc new X
+    var newY = clonedGraphic.geometry.y + _distance * Math.sin(radians); // calc new Y
     var deltaX = newX - clonedGraphic.geometry.x;
     var deltaY = newY - clonedGraphic.geometry.y;
-    //clonedGraphic.geometry.x = deltaX
-    //clonedGraphic.geometry.y = deltaY
-    clonedGraphic.geometry.x += 2;
+    // clonedGraphic.geometry.x = deltaX
+    // clonedGraphic.geometry.y = deltaY
+    //clonedGraphic.geometry.x += 2;
+    clonedGraphic.geometry.x = Math.floor(Math.random()*360) - 180
+    clonedGraphic.geometry.y = Math.round(Math.acos(2*Math.random() - 1)*180/Math.PI) - 90
     clonedGraphic.attributes.new = `[${clonedGraphic.geometry.x},${clonedGraphic.geometry.y}]`
     clonedGraphic.attributes.UPDATE_TIME = new Date()
     return clonedGraphic
