@@ -24,7 +24,15 @@ export class MapComponent implements OnInit {
   setlayer() {
     this.layer.deck.layers = this.allLayers
     console.log(this.layer.deck.layers);
+
+    setInterval(() => {
+      console.time('update');
+      this.updatelayer()
+      console.timeEnd('update');
+    }, 500);
   }
+
+
 
   updatelayer() {
     let iconLayer = this.layer.deck.layers.find(l => l.id.includes('icon-layer'))
@@ -33,6 +41,8 @@ export class MapComponent implements OnInit {
     data.forEach(oldGraphic => {
       newData.push(this.setNewCoord(oldGraphic));
     });
+
+    // iconLayer.props.data = newData;
 
     const ICON_MAPPING = {
       marker: { x: 0, y: 0, width: 512, height: 512, mask: true }
@@ -71,8 +81,10 @@ export class MapComponent implements OnInit {
     // clonedGraphic.geometry.x = deltaX
     // clonedGraphic.geometry.y = deltaY
     //clonedGraphic.geometry.x += 2;
-    clonedGraphic.geometry.x = Math.floor(Math.random()*360) - 180
-    clonedGraphic.geometry.y = Math.round(Math.acos(2*Math.random() - 1)*180/Math.PI) - 90
+    //clonedGraphic.geometry.x = Math.floor(Math.random()*360) - 180
+    //clonedGraphic.geometry.y = Math.round(Math.acos(2*Math.random() - 1)*180/Math.PI) - 90
+    clonedGraphic.geometry.x = Math.random() + 34
+    clonedGraphic.geometry.y = Math.random() + 32
     clonedGraphic.attributes.new = `[${clonedGraphic.geometry.x},${clonedGraphic.geometry.y}]`
     clonedGraphic.attributes.UPDATE_TIME = new Date()
     return clonedGraphic
@@ -113,7 +125,8 @@ export class MapComponent implements OnInit {
     ]).then(({ DeckLayer, modules }) => {
       const [ArcGISMap, MapView, webMercatorUtils, Graphic] = modules;
       this.layer = new DeckLayer();
-      //const layer = this.layer
+      // @ts-ignore
+      deck.log.level = 4
       this.layer.deck.layers = [];
 
       this.graphics = [];
@@ -150,7 +163,7 @@ export class MapComponent implements OnInit {
         scaleSize: 15,
         getIcon: d => 'marker',
         getPosition: d => [d.geometry.x, d.geometry.y],
-        getSize: d => 150,
+        getSize: d => 50,
         getColor: (d) => [Math.sqrt(d.exits), 140, 0],
       }))
 
