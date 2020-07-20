@@ -26,7 +26,12 @@
             "styles": [
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": [
+              "./node_modules/@deck.gl/core/dist.min.js",
+              "./node_modules/@deck.gl/arcgis/dist.min.js",
+              "./node_modules/@deck.gl/layers/dist.min.js",
+              "./node_modules/@deck.gl/geo-layers/dist.min.js"
+            ]
           },
           "configurations": {
             "production": {

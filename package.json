@@ -20,7 +20,10 @@
     "@angular/platform-browser-dynamic": "~9.1.0",
     "@angular/router": "~9.1.0",
     "@deck.gl/arcgis": "^8.2.2",
-    "deck.gl": "^8.2.2",
+    "@deck.gl/core": "^8.0.16",
+    "@deck.gl/layers": "^8.0.16",
+    "@deck.gl/mapbox": "^8.0.16",
+    "@deck.gl/geo-layers": "^8.0.16",
     "rxjs": "~6.5.4",
     "tslib": "^1.10.0",
     "zone.js": "~0.10.2"

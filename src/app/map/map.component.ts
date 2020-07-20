@@ -1,18 +1,21 @@
 import { Component, OnInit } from '@angular/core';
-import { loadArcGISModules } from "@deck.gl/arcgis";
-import { BitmapLayer, TextLayer, IconLayer } from '@deck.gl/layers';
-import { TripsLayer } from "@deck.gl/geo-layers";
+//import { loadArcGISModules } from "@deck.gl/arcgis";
+//import { BitmapLayer, TextLayer, IconLayer } from '@deck.gl/layers';
+declare var deck:any;
 
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.css']
 })
-export class MapComponent implements OnInit {
 
+
+export class MapComponent implements OnInit {
+  ron;
   layer;
   allLayers = [];
   graphics = [];
+  iconLayerData = []
 
   constructor() {
     this.initDeckLayers();
@@ -22,7 +25,7 @@ export class MapComponent implements OnInit {
   }
 
   setlayer() {
-    this.layer.deck.layers = this.allLayers
+    this.layer.deck.layers = [this.ron];
     console.log(this.layer.deck.layers);
 
     setInterval(() => {
@@ -35,21 +38,24 @@ export class MapComponent implements OnInit {
 
 
   updatelayer() {
-    let iconLayer = this.layer.deck.layers.find(l => l.id.includes('icon-layer'))
-    let data = iconLayer.props.data
+    //let iconLayer = this.layer.deck.layers.find(l => l.id.includes('icon-layer'));
+    let data = this.ron.props.data;
     let newData = [];
-    data.forEach(oldGraphic => {
-      newData.push(this.setNewCoord(oldGraphic));
-    });
+    newData = data.map(oldGraphic => this.setNewCoord(oldGraphic));
 
-    // iconLayer.props.data = newData;
+    this.ron.props.data = newData;
+
+    //this.iconLayerData = [...newData];
+    //this.ron.props.data = [...newData];
+    this.layer.deck.layers = [this.ron];
 
     const ICON_MAPPING = {
-      marker: { x: 0, y: 0, width: 512, height: 512, mask: true }
+      marker: { x: 0, y: 0, width: 512, height: 512, mask: false }
     };
 
-    this.layer.deck.layers = this.layer.deck.layers.filter(l => l !== iconLayer)
-    let newIconLayer = new IconLayer({
+    this.layer.deck.layers = this.layer.deck.layers.filter(l => l !== this.ron)
+
+    this.ron = new deck.IconLayer({
       id: `icon-layer${Math.random() * 10}`,
       // data: [{ name: 'Colma (COLM)', address: '365 D Street, Colma CA 94014', exits: 4214, coordinates: [34.5, 32] },
       // { name: 'Colma (COLM)', address: '365 D Street, Colma CA 94014', exits: 4214, coordinates: [35, 32] }],
@@ -57,15 +63,16 @@ export class MapComponent implements OnInit {
       pickable: true,
       // iconAtlas and iconMapping are required
       // getIcon: return a string
-      iconAtlas: 'https://image.flaticon.com/icons/svg/3075/3075933.svg',
+      iconAtlas: 'https://image.flaticon.com/icons/svg/3165/3165197.svg',
       iconMapping: ICON_MAPPING,
       scaleSize: 15,
       getIcon: d => 'marker',
       getPosition: d => [d.geometry.x, d.geometry.y],
       getSize: d => 50,
-      getColor: (d) => [Math.sqrt(d.exits), 140, 0],
+      //getColor: (d) => [Math.random() * 255, Math.random() * 255, Math.random() * 255],
     })
-    this.layer.deck.layers.push(newIconLayer);
+
+    this.layer.deck.layers.push(this.ron);
 
   }
 
@@ -83,8 +90,8 @@ export class MapComponent implements OnInit {
     //clonedGraphic.geometry.x += 2;
     //clonedGraphic.geometry.x = Math.floor(Math.random()*360) - 180
     //clonedGraphic.geometry.y = Math.round(Math.acos(2*Math.random() - 1)*180/Math.PI) - 90
-    clonedGraphic.geometry.x = Math.random() + 34
-    clonedGraphic.geometry.y = Math.random() + 32
+    clonedGraphic.geometry.x = Math.random()  * 100 - 50
+    clonedGraphic.geometry.y = Math.random()  * 100 - 50
     clonedGraphic.attributes.new = `[${clonedGraphic.geometry.x},${clonedGraphic.geometry.y}]`
     clonedGraphic.attributes.UPDATE_TIME = new Date()
     return clonedGraphic
@@ -117,7 +124,7 @@ export class MapComponent implements OnInit {
 
 
   initDeckLayers() {
-    loadArcGISModules([
+    deck.loadArcGISModules([
       'esri/Map',
       'esri/views/MapView',
       'esri/geometry/support/webMercatorUtils',
@@ -126,7 +133,8 @@ export class MapComponent implements OnInit {
       const [ArcGISMap, MapView, webMercatorUtils, Graphic] = modules;
       this.layer = new DeckLayer();
       // @ts-ignore
-      deck.log.level = 4
+      //let deckFramework = deck;
+      deck.log.level = 3
       this.layer.deck.layers = [];
 
       this.graphics = [];
@@ -135,26 +143,27 @@ export class MapComponent implements OnInit {
       for (let i = 0; this.graphics.length < count; i++) {
         this.graphics.push(new Graphic(this.createGraphicsData(i)));
       }
+      this.iconLayerData = this.graphics;
       console.log(this.graphics);
 
 
-      this.allLayers.push(new TextLayer({
-        data: [{ name: 'DORDORDOR', coord: [34, 32] }],
-        pickable: true,
-        getPosition: d => d.coord,
-        getText: d => d.name,
-        getColor: [255, 255, 255, 255],
-        getSize: 50,
-        getAngle: 0,
-        getTextAnchor: 'middle',
-        getAlignmentBaseline: 'center',
-        fontFamily: 'Heebo'
-      }))
+      // this.allLayers.push(new deck.TextLayer({
+      //   data: [{ name: 'DORDORDOR', coord: [34, 32] }],
+      //   pickable: true,
+      //   getPosition: d => d.coord,
+      //   getText: d => d.name,
+      //   getColor: [255, 255, 255, 255],
+      //   getSize: 50,
+      //   getAngle: 0,
+      //   getTextAnchor: 'middle',
+      //   getAlignmentBaseline: 'center',
+      //   fontFamily: 'Heebo'
+      // }))
 
       const ICON_MAPPING = {
         marker: { x: 0, y: 0, width: 512, height: 512, mask: true }
       };
-      this.allLayers.push(new IconLayer({
+      this.ron = new deck.IconLayer({
         id: 'icon-layer',
         data: this.graphics,
         pickable: true,
@@ -165,7 +174,17 @@ export class MapComponent implements OnInit {
         getPosition: d => [d.geometry.x, d.geometry.y],
         getSize: d => 50,
         getColor: (d) => [Math.sqrt(d.exits), 140, 0],
-      }))
+        // updateTriggers: {
+        //   getPosition: [this.iconLayerData]
+        // },
+        // dataComparator: (newData, oldData) => {
+        //   if (newData[0].attributes.UPDATE_TIME > oldData[0].attributes.UPDATE_TIME) {
+        //     return false
+        //   }
+        //   return true;
+        // }
+      });
+      //this.allLayers.push(this.ron);
 
       new MapView({
         container: "viewDiv",
