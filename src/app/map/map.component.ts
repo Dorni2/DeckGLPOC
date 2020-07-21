@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 //import { loadArcGISModules } from "@deck.gl/arcgis";
 //import { BitmapLayer, TextLayer, IconLayer } from '@deck.gl/layers';
-declare var deck:any;
+declare var deck: any;
 
 @Component({
   selector: 'app-map',
@@ -16,6 +16,9 @@ export class MapComponent implements OnInit {
   allLayers = [];
   graphics = [];
   iconLayerData = []
+  total = 0
+  i = 0
+  previousTime;
 
   constructor() {
     this.initDeckLayers();
@@ -26,18 +29,20 @@ export class MapComponent implements OnInit {
 
   setlayer() {
     this.layer.deck.layers = [this.ron];
-    console.log(this.layer.deck.layers);
+    this.previousTime = performance.now();
+    requestAnimationFrame(this.updatelayer.bind(this));
 
-    setInterval(() => {
-      console.time('update');
-      this.updatelayer()
-      console.timeEnd('update');
-    }, 500);
+    // setInterval(() => {
+    //   this.updatelayer()
+    // }, 1);
   }
 
 
-
   updatelayer() {
+    let t = performance.now();
+    this.total += t - this.previousTime;
+    console.log(this.total / ++this.i);
+    this.previousTime = t;
     //let iconLayer = this.layer.deck.layers.find(l => l.id.includes('icon-layer'));
     let data = this.ron.props.data;
     let newData = [];
@@ -50,7 +55,9 @@ export class MapComponent implements OnInit {
     this.layer.deck.layers = [this.ron];
 
     const ICON_MAPPING = {
-      marker: { x: 0, y: 0, width: 512, height: 512, mask: false }
+      mask1: { x: 0, y: 0, width: 512, height: 512, mask: false },
+      mask2: { x: 512, y: 0, width: 512, height: 512, mask: false },
+      mask3: { x: 1024, y: 0, width: 512, height: 512, mask: false }
     };
 
     this.layer.deck.layers = this.layer.deck.layers.filter(l => l !== this.ron)
@@ -61,12 +68,16 @@ export class MapComponent implements OnInit {
       // { name: 'Colma (COLM)', address: '365 D Street, Colma CA 94014', exits: 4214, coordinates: [35, 32] }],
       data: newData,
       pickable: true,
-      // iconAtlas and iconMapping are required
-      // getIcon: return a string
-      iconAtlas: 'https://image.flaticon.com/icons/svg/3165/3165197.svg',
+      iconAtlas: 'https://i.imgur.com/F0J3MSX.png',
       iconMapping: ICON_MAPPING,
       scaleSize: 15,
-      getIcon: d => 'marker',
+      getIcon: d => d.attributes.IMAGE_NAME,
+      // getIcon: d => ({
+      //   url: d.attributes.IMAGE_URL,
+      //   width: 128,
+      //   height: 128,
+      //   anchorY: 128
+      // }),
       getPosition: d => [d.geometry.x, d.geometry.y],
       getSize: d => 50,
       //getColor: (d) => [Math.random() * 255, Math.random() * 255, Math.random() * 255],
@@ -74,27 +85,31 @@ export class MapComponent implements OnInit {
 
     this.layer.deck.layers.push(this.ron);
 
+    requestAnimationFrame(this.updatelayer.bind(this))
   }
 
   private setNewCoord(gr) {
-    let clonedGraphic = gr.clone();
-    clonedGraphic.attributes.old = `[${clonedGraphic.geometry.x},${clonedGraphic.geometry.y}]`
-    let _distance = 10000
-    var radians = clonedGraphic.attributes.ANGLE * (Math.PI / 180); // Convert angle to radians
-    var newX = clonedGraphic.geometry.x + _distance * Math.cos(radians); // calc new X
-    var newY = clonedGraphic.geometry.y + _distance * Math.sin(radians); // calc new Y
-    var deltaX = newX - clonedGraphic.geometry.x;
-    var deltaY = newY - clonedGraphic.geometry.y;
-    // clonedGraphic.geometry.x = deltaX
-    // clonedGraphic.geometry.y = deltaY
-    //clonedGraphic.geometry.x += 2;
-    //clonedGraphic.geometry.x = Math.floor(Math.random()*360) - 180
-    //clonedGraphic.geometry.y = Math.round(Math.acos(2*Math.random() - 1)*180/Math.PI) - 90
-    clonedGraphic.geometry.x = Math.random()  * 100 - 50
-    clonedGraphic.geometry.y = Math.random()  * 100 - 50
-    clonedGraphic.attributes.new = `[${clonedGraphic.geometry.x},${clonedGraphic.geometry.y}]`
-    clonedGraphic.attributes.UPDATE_TIME = new Date()
-    return clonedGraphic
+    // let clonedGraphic = gr.clone();
+    // clonedGraphic.attributes.old = `[${clonedGraphic.geometry.x},${clonedGraphic.geometry.y}]`
+    // let _distance = 10000
+    // var radians = clonedGraphic.attributes.ANGLE * (Math.PI / 180); // Convert angle to radians
+    // var newX = clonedGraphic.geometry.x + _distance * Math.cos(radians); // calc new X
+    // var newY = clonedGraphic.geometry.y + _distance * Math.sin(radians); // calc new Y
+    // var deltaX = newX - clonedGraphic.geometry.x;
+    // var deltaY = newY - clonedGraphic.geometry.y;
+    // // clonedGraphic.geometry.x = deltaX
+    // // clonedGraphic.geometry.y = deltaY
+    // //clonedGraphic.geometry.x += 2;
+    // //clonedGraphic.geometry.x = Math.floor(Math.random()*360) - 180
+    // //clonedGraphic.geometry.y = Math.round(Math.acos(2*Math.random() - 1)*180/Math.PI) - 90
+    // clonedGraphic.geometry.x += (Math.random() - 0.5) / 8
+    // clonedGraphic.geometry.y += (Math.random() - 0.5) / 8
+    // clonedGraphic.attributes.new = `[${clonedGraphic.geometry.x},${clonedGraphic.geometry.y}]`
+    // clonedGraphic.attributes.UPDATE_TIME = new Date();
+    // return clonedGraphic
+    gr.geometry.x += (Math.random() - 0.5) / 8
+    gr.geometry.y += (Math.random() - 0.5) / 8
+    return gr;
   }
 
   private setNewCoordsBetter(gr) {
@@ -116,7 +131,10 @@ export class MapComponent implements OnInit {
       attributes: {
         NAME: "Feature #" + i,
         ANGLE: Math.round(Math.random() * 360),
-        UPDATE_TIME: new Date()
+        UPDATE_TIME: new Date(),
+        IMAGE_NAME: i % 3 == 0 ? 'mask1' : i % 3 == 1 ? 'mask2' : 'mask3',
+        IMAGE_URL: i % 3 == 0 ? 'https://image.flaticon.com/icons/svg/3165/3165233.svg' :
+          i % 3 == 1 ? 'https://image.flaticon.com/icons/svg/3165/3165197.svg' : 'https://image.flaticon.com/icons/svg/3165/3165214.svg'
       }
     }
   }
@@ -128,13 +146,15 @@ export class MapComponent implements OnInit {
       'esri/Map',
       'esri/views/MapView',
       'esri/geometry/support/webMercatorUtils',
-      'esri/Graphic'
+      'esri/Graphic',
+      'esri/layers/VectorTileLayer'
     ]).then(({ DeckLayer, modules }) => {
-      const [ArcGISMap, MapView, webMercatorUtils, Graphic] = modules;
+      const [ArcGISMap, MapView, webMercatorUtils, Graphic, VectorTileLayer] = modules;
       this.layer = new DeckLayer();
       // @ts-ignore
       //let deckFramework = deck;
-      deck.log.level = 3
+      deck.log.enable(true);
+      deck.log.level = 2
       this.layer.deck.layers = [];
 
       this.graphics = [];
@@ -144,7 +164,6 @@ export class MapComponent implements OnInit {
         this.graphics.push(new Graphic(this.createGraphicsData(i)));
       }
       this.iconLayerData = this.graphics;
-      console.log(this.graphics);
 
 
       // this.allLayers.push(new deck.TextLayer({
@@ -161,16 +180,24 @@ export class MapComponent implements OnInit {
       // }))
 
       const ICON_MAPPING = {
-        marker: { x: 0, y: 0, width: 512, height: 512, mask: true }
+        mask1: { x: 0, y: 0, width: 512, height: 512, mask: false },
+        mask2: { x: 512, y: 0, width: 512, height: 512, mask: false },
+        mask3: { x: 1024, y: 0, width: 512, height: 512, mask: false }
       };
       this.ron = new deck.IconLayer({
         id: 'icon-layer',
         data: this.graphics,
         pickable: true,
-        iconAtlas: 'https://image.flaticon.com/icons/svg/3075/3075933.svg',
+        iconAtlas: 'https://i.imgur.com/F0J3MSX.png',
         iconMapping: ICON_MAPPING,
         scaleSize: 15,
-        getIcon: d => 'marker',
+        getIcon: d => d.attributes.IMAGE_NAME,
+        // getIcon: d => ({
+        //   url: d.attributes.IMAGE_URL,
+        //   width: 128,
+        //   height: 128,
+        //   anchorY: 128
+        // }),
         getPosition: d => [d.geometry.x, d.geometry.y],
         getSize: d => 50,
         getColor: (d) => [Math.sqrt(d.exits), 140, 0],
@@ -186,15 +213,17 @@ export class MapComponent implements OnInit {
       });
       //this.allLayers.push(this.ron);
 
-      new MapView({
+      let x = new MapView({
         container: "viewDiv",
         map: new ArcGISMap({
-          basemap: "dark-gray-vector",
-          layers: [this.layer]
+          layers: [new VectorTileLayer({url:'https://basemaps.arcgis.com/arcgis/rest/services/World_Basemap_GCS_v2/VectorTileServer'}), 
+                   this.layer]
         }),
         center: [34, 32],
         zoom: 6
       });
+
+      console.error(x);
     });
   }
 }
